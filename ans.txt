@@ -1,0 +1,85 @@
+en
+conf t
+hostname R1
+int g0/0
+ip add 192.168.1.1 255.255.255.0
+no shut
+int g0/1
+ip add 192.168.2.1 255.255.255.0
+no shut
+int s0/0/0
+ip add 172.16.10.1 255.255.255.252
+no shut
+end
+conf t
+router ospf 10
+router-id 1.1.1.1
+network 192.168.1.1 0.0.0.0 area 1
+network 192.168.2.1 0.0.0.0 area 1
+network 172.16.10.1 0.0.0.0 area 0
+passive-interface g0/0
+passive-interface g0/1
+end 
+conf t
+access-list 1 deny host 209.165.200.1
+access-list 1 permit any
+int g0/1
+ip access-group 1 out
+int g0/0
+ip access-group 1 out
+pause
+en
+conf t
+hostname R2
+int s0/0/0
+ip add 172.16.10.2 255.255.255.252
+no shut
+int g0/0
+ip add 10.2.1.1 255.255.255.0
+no shut
+int s0/0/1
+ip add 172.16.10.5 255.255.255.252
+no shut
+int lo0
+ip add 209.165.200.1 255.255.255.252
+no shut
+end
+conf t
+router ospf 10
+router-id 2.2.2.2
+network 172.16.10.2 0.0.0.0 area 0
+network 10.2.1.1 0.0.0.0 area 0
+network 172.16.10.5 0.0.0.0 area 0
+passive-interface g0/0
+passive-interface lo0
+ip route 0.0.0.0 0.0.0.0 lo0
+router ospf 10
+default-information originate
+pause
+en
+conf t
+hostname R3
+int s0/0/0
+ip add 172.16.10.6 255.255.255.252
+no shut
+int g0/0
+ip add 10.1.1.1 255.255.255.0
+no shut
+int g0/1
+ip add 10.1.2.1 255.255.255.0
+no shut
+end 
+conf t
+router ospf 10
+router-id 3.3.3.3
+network 172.16.10.6 0.0.0.0 area 0
+network 10.1.1.1 0.0.0.0 area 2
+network 10.1.2.1 0.0.0.0 area 2
+passive-interface g0/0
+passive-interface g0/1
+end 
+conf t
+access-list 1 deny 10.2.1.0 0.0.0.255
+access-list 1 permit any
+int g0/1
+ip access-group 1 out
